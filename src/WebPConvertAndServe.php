@@ -1,0 +1,152 @@
+<?php
+namespace WebPConvertAndServe;
+
+use WebPConvert\WebPConvert;
+use WebPConvertAndServe\PathHelper;
+
+class WebPConvertAndServe
+{
+    public static $SERVE_ORIGINAL = 1;
+    public static $SERVE_404 = 2;
+    public static $SERVE_ERROR_MESSAGE_IMAGE = 3;
+    public static $SERVE_ERROR_MESSAGE_TEXT = 4;
+
+    private static function serve404()
+    {
+        header($_SERVER["SERVER_PROTOCOL"]." 404 Not Found");
+    }
+
+    private static function serveOriginal($source)
+    {
+        // Prevent caching image
+        header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
+        header("Cache-Control: post-check=0, pre-check=0", false);
+        header("Pragma: no-cache");
+
+        $arr = explode('.', $source);
+        $ext = array_pop($arr);
+        switch (strtolower($ext)) {
+            case 'jpg':
+            case 'jpeg':
+                header('Content-type: image/jpeg');
+                break;
+            case 'png':
+                header('Content-type: image/png');
+                break;
+        }
+        readfile($source);
+    }
+
+    private static function serveErrorMessageImage($msg)
+    {
+        // Generate image containing error message
+        header('Content-type: image/gif');
+
+        // Prevent caching image
+        header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
+        header("Cache-Control: post-check=0, pre-check=0", false);
+        header("Pragma: no-cache");
+
+        $image = imagecreatetruecolor(620, 200);
+        imagestring($image, 1, 5, 5, $msg, imagecolorallocate($image, 233, 214, 291));
+        // echo imagewebp($image);
+        echo imagegif($image);
+        imagedestroy($image);
+    }
+
+
+    public static function convertAndServeImage($source, $destination, $options, $failAction, $criticalFailAction, $debug = false)
+    {
+        if ($debug) {
+            error_reporting(E_ALL);
+            ini_set('display_errors', 'On');
+        } else {
+            ini_set('display_errors', 'Off');
+        }
+
+        $criticalFail = false;
+
+        try {
+            $success = WebPConvert::convert($source, $destination, $options);
+            if (!$success) {
+                $msg = 'No converters are operational';
+            }
+        } catch (\WebPConvert\Exceptions\InvalidFileExtensionException $e) {
+            $criticalFail = true;
+            $msg = $e->getMessage();
+        } catch (\WebPConvert\Exceptions\TargetNotFoundException $e) {
+            $criticalFail = true;
+            $msg = $e->getMessage();
+        } catch (\Exception $e) {
+            $msg = $e->getMessage();
+        }
+
+        if ($success) {
+            header('Content-type: image/webp');
+            // Should we add Content-Length header?
+            // header('Content-Length: ' . filesize($file));
+            readfile($destination);
+        } else {
+            if ($criticalFail) {
+                switch ($criticalFailAction) {
+                    case WebPConvertAndServe::$SERVE_404:
+                        self::serve404();
+                        break;
+                    case WebPConvertAndServe::$SERVE_ERROR_MESSAGE_IMAGE:
+                        self::serveErrorMessageImage($msg);
+                        break;
+                    case WebPConvertAndServe::$SERVE_ERROR_MESSAGE_TEXT:
+                        echo $msg;
+                        break;
+                }
+            } else {
+                //echo 'non-critical fail - handled by: ' . $failAction;
+                switch ($failAction) {
+                    case WebPConvertAndServe::$SERVE_ORIGINAL:
+                        self::serveOriginal($source);
+                        break;
+                    case WebPConvertAndServe::$SERVE_404:
+                        self::serve404();
+                        break;
+                    case WebPConvertAndServe::$SERVE_ERROR_MESSAGE_IMAGE:
+                        self::serveErrorMessageImage($msg);
+                        break;
+                    case WebPConvertAndServe::$SERVE_ERROR_MESSAGE_TEXT:
+                        echo $msg;
+                        break;
+                }
+            }
+        }
+    }
+
+    public static function convertAndReport($source, $destination, $options)
+    {
+        echo '<i>source:</i> ' . $source . '<br>';
+        echo '<i>destination:</i> ' . $destination . '<br>';
+        echo '<i>options:</i> ' . print_r($options, true) . '<br>';
+        echo '<br>';
+
+        try {
+            $success = WebPConvert::convert($source, $destination, $options);
+        } catch (\Exception $e) {
+            $success = false;
+
+            $msg = $e->getMessage();
+
+            if ($debug) {
+                //throw $e;
+                echo $msg;
+                exit;
+            } else {
+                echo $msg;
+                exit;
+            }
+        }
+
+        if ($success) {
+            echo 'ok';
+        } else {
+            echo 'Conversion failed. None of the tried converters are operational';
+        }
+    }
+}
