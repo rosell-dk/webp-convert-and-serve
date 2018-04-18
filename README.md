@@ -35,33 +35,16 @@ If conversion fails, it will make sense to serve the source image instead (if th
 
 **failAction**
 
-Possible values:
-
-*WebPConvertAndServe::SERVE_ORIGINAL*
-Serve the original image.
-
-*WebPConvertAndServe::$SERVE_404*
-Serve 404 status (not found)
-
-*WebPConvertAndServe::$SERVE_ERROR_MESSAGE_IMAGE*
-Serve an image with text explaining the problem
-
-*WebPConvertAndServe::$SERVE_ERROR_MESSAGE_TEXT*
-Serve text explaining the problem
+| Possible values:                                    | Meaning                                         |
+| --------------------------------------------------- | ----------------------------------------------- |
+| *WebPConvertAndServe::SERVE_ORIGINAL*               | Serve the original image.                       |
+| *WebPConvertAndServe::$SERVE_404*                   | Serve 404 status (not found)                    |
+| *WebPConvertAndServe::$SERVE_ERROR_MESSAGE_IMAGE*   | Serve an image with text explaining the problem |
+| *WebPConvertAndServe::$SERVE_ERROR_MESSAGE_TEXT*    | Serve text explaining the problem               |
 
 **criticalFailAction**
 
-Possible values:
-
-*WebPConvertAndServe::$SERVE_404*
-Serve 404 status (not found)
-
-*WebPConvertAndServe::$SERVE_ERROR_MESSAGE_IMAGE*
-Serve an image with text explaining the problem
-
-*WebPConvertAndServe::$SERVE_ERROR_MESSAGE_TEXT*
-Serve text explaining the problem
-
+Possible values: Same as above, except that `SERVE_ORIGINAL` is not an option.
 
 # Example:
 
