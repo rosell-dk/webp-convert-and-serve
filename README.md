@@ -1,5 +1,7 @@
 # WebP Convert and Serve
 
+[![Build Status](https://travis-ci.org/rosell-dk/webp-convert.png?branch=master)](https://travis-ci.org/rosell-dk/webp-convert-and-serve)
+
 This library can be used for converting and serving WebP images instead of jpeg/png. It is based on [WebPConvert](https://github.com/rosell-dk/webp-convert), which takes care of the conversion. On top of that, it adds a method for serving the converted image with options on how to handle conversion failures.
 
 The task of serving is in itself actually quite small.
