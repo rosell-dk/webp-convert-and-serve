@@ -74,4 +74,4 @@ WebPConvertAndServe::convertAndServeImage($source, $destination, $options, $fail
 
 # Installing
 
-Run `composer install`
+Run `composer require rosell-dk/webp-convert-and-serve`
