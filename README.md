@@ -37,16 +37,22 @@ If conversion fails, it will make sense to serve the source image instead (if th
 
 **failAction**
 
+Indicate what to serve, in case of normal conversion failure
+
 | Possible values:                                    | Meaning                                         |
 | --------------------------------------------------- | ----------------------------------------------- |
-| *WebPConvertAndServe::SERVE_ORIGINAL*               | Serve the original image.                       |
-| *WebPConvertAndServe::$SERVE_404*                   | Serve 404 status (not found)                    |
-| *WebPConvertAndServe::$SERVE_ERROR_MESSAGE_IMAGE*   | Serve an image with text explaining the problem |
-| *WebPConvertAndServe::$SERVE_ERROR_MESSAGE_TEXT*    | Serve text explaining the problem               |
+| *WebPConvertAndServe::$ORIGINAL*                    | Serve the original image.                       |
+| *WebPConvertAndServe::$HTTP_404*                    | Serve 404 status (not found)                    |
+| *WebPConvertAndServe::$REPORT_AS_IMAGE*             | Serve an image with text explaining the problem |
+| *WebPConvertAndServe::$REPORT*                      | Serve a textual report explaining the problem   |
 
 **criticalFailAction**
 
-Possible values: Same as above, except that `SERVE_ORIGINAL` is not an option.
+Possible values: Same as above, except that `ORIGINAL` is not an option.
+
+**Return value**
+
+Number indicating what was served. On fail or critical fail, the value will be one of the constants listed in failAction. On success, it will be *WebPConvertAndServe::$CONVERTED_IMAGE*. All fail constants are negative. The success constant is positive &ndash; so you can test success with a `if ($returnValue > 0)`
 
 # Example:
 
@@ -59,14 +65,14 @@ $source = __DIR__ . '/logo.jpg';
 $destination = $source . '.webp';
 $options = [];
 
-$failAction = WebPConvertAndServe::$SERVE_ORIGINAL;
-//$failAction = WebPConvertAndServe::$SERVE_ERROR_MESSAGE_TEXT;
-//$failAction = WebPConvertAndServe::$SERVE_404;
-//$failAction = WebPConvertAndServe::$SERVE_ERROR_MESSAGE_IMAGE;
+$failAction = WebPConvertAndServe::$ORIGINAL;
+//$failAction = WebPConvertAndServe::$REPORT;
+//$failAction = WebPConvertAndServe::$HTTP_404;
+//$failAction = WebPConvertAndServe::$REPORT_AS_IMAGE;
 
-//$criticalFailAction = WebPConvertAndServe::$SERVE_ERROR_MESSAGE_TEXT;
-$criticalFailAction = WebPConvertAndServe::$SERVE_404;
-//$criticalFailAction = WebPConvertAndServe::$SERVE_ERROR_MESSAGE_IMAGE;
+//$criticalFailAction = WebPConvertAndServe::$REPORT;
+$criticalFailAction = WebPConvertAndServe::$HTTP_404;
+//$criticalFailAction = WebPConvertAndServe::$REPORT_AS_IMAGE;
 
 WebPConvertAndServe::convertAndServeImage($source, $destination, $options, $failAction, $criticalFailAction);
 ```

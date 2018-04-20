@@ -6,14 +6,16 @@ use WebPConvertAndServe\PathHelper;
 
 class WebPConvertAndServe
 {
-    public static $SERVE_ORIGINAL = 1;
-    public static $SERVE_404 = 2;
-    public static $SERVE_ERROR_MESSAGE_IMAGE = 3;
-    public static $SERVE_ERROR_MESSAGE_TEXT = 4;
+    public static $CONVERTED_IMAGE = 1;
+    public static $ORIGINAL = -1;
+    public static $HTTP_404 = -2;
+    public static $REPORT_AS_IMAGE = -3;
+    public static $REPORT = -4;
 
     private static function serve404()
     {
-        header($_SERVER["SERVER_PROTOCOL"]." 404 Not Found");
+        $protocol = isset($_SERVER["SERVER_PROTOCOL"]) ? $_SERVER["SERVER_PROTOCOL"] : 'HTTP/1.0';
+        header($protocol . " 404 Not Found");
     }
 
     private static function serveOriginal($source)
@@ -66,6 +68,7 @@ class WebPConvertAndServe
 
         $criticalFail = false;
 
+        $success = false;
         try {
             $success = WebPConvert::convert($source, $destination, $options);
             if (!$success) {
@@ -86,36 +89,25 @@ class WebPConvertAndServe
             // Should we add Content-Length header?
             // header('Content-Length: ' . filesize($file));
             readfile($destination);
+            return self::$CONVERTED_IMAGE;
         } else {
-            if ($criticalFail) {
-                switch ($criticalFailAction) {
-                    case WebPConvertAndServe::$SERVE_404:
-                        self::serve404();
-                        break;
-                    case WebPConvertAndServe::$SERVE_ERROR_MESSAGE_IMAGE:
-                        self::serveErrorMessageImage($msg);
-                        break;
-                    case WebPConvertAndServe::$SERVE_ERROR_MESSAGE_TEXT:
-                        echo $msg;
-                        break;
-                }
-            } else {
-                //echo 'non-critical fail - handled by: ' . $failAction;
-                switch ($failAction) {
-                    case WebPConvertAndServe::$SERVE_ORIGINAL:
-                        self::serveOriginal($source);
-                        break;
-                    case WebPConvertAndServe::$SERVE_404:
-                        self::serve404();
-                        break;
-                    case WebPConvertAndServe::$SERVE_ERROR_MESSAGE_IMAGE:
-                        self::serveErrorMessageImage($msg);
-                        break;
-                    case WebPConvertAndServe::$SERVE_ERROR_MESSAGE_TEXT:
-                        echo $msg;
-                        break;
-                }
+            $action = ($criticalFail ? $criticalFailAction : $failAction);
+
+            switch ($action) {
+                case WebPConvertAndServe::$ORIGINAL:
+                    self::serveOriginal($source);
+                    break;
+                case WebPConvertAndServe::$HTTP_404:
+                    self::serve404();
+                    break;
+                case WebPConvertAndServe::$REPORT_AS_IMAGE:
+                    self::serveErrorMessageImage($msg);
+                    break;
+                case WebPConvertAndServe::$REPORT:
+                    echo $msg;
+                    break;
             }
+            return $action;
         }
     }
 

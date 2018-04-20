@@ -22,12 +22,72 @@ class WebPConvertAndServeTest extends TestCase
         ob_start();
         WebPConvertAndServe::convertAndServeImage($source, $destination, array(
             'converters' => array()
-        ), WebPConvertAndServe::$SERVE_ERROR_MESSAGE_TEXT, WebPConvertAndServe::$SERVE_404);
+        ), WebPConvertAndServe::$REPORT, WebPConvertAndServe::$HTTP_404);
         $result = ob_get_contents();
 
         $this->assertInternalType('string', $result);
     }
 
+    /**
+     * @runInSeparateProcess
+     */
+    public function testNormalFailOriginal()
+    {
+        $source = __DIR__ . '/test.jpg';
+        $destination = __DIR__ . '/test.jpg.webp';
+
+        // Remove all converters to trigger a normal fail
+        ob_start();
+        $result = WebPConvertAndServe::convertAndServeImage($source, $destination, array(
+            'converters' => array()
+        ), WebPConvertAndServe::$ORIGINAL, WebPConvertAndServe::$HTTP_404);
+        $echoed = ob_get_contents();
+
+        $this->assertEquals(WebPConvertAndServe::$ORIGINAL, $result);
+    }
+
+    /**
+     * @runInSeparateProcess
+     */
+    public function testSuccesOrNormalFail()
+    {
+        $source = __DIR__ . '/test.jpg';
+        $destination = __DIR__ . '/test.jpg.webp';
+
+        // Remove all converters to trigger a normal fail
+        ob_start();
+        $result = WebPConvertAndServe::convertAndServeImage(
+            $source,
+            $destination,
+            [],
+            WebPConvertAndServe::$ORIGINAL,
+            WebPConvertAndServe::$HTTP_404
+        );
+        $echoed = ob_get_contents();
+
+        $this->assertContains($result, [
+            WebPConvertAndServe::$CONVERTED_IMAGE,
+            WebPConvertAndServe::$ORIGINAL,
+        ], $result);
+    }
+
+    /**
+     * @runInSeparateProcess
+     */
+    public function testCriticalFail404()
+    {
+        $source = __DIR__ . '/i-dont-exist.jpg';
+        $destination = __DIR__ . '/i-should-never-exist.jpg.webp';
+
+        // Remove all converters to trigger a normal fail
+        ob_start();
+        $result = WebPConvertAndServe::convertAndServeImage($source, $destination, array(
+            'converters' => array()
+        ), WebPConvertAndServe::$ORIGINAL, WebPConvertAndServe::$HTTP_404);
+        $echoed = ob_get_contents();
+
+        $this->assertEquals(WebPConvertAndServe::$HTTP_404, $result);
+    }
     /*
     TODO: test headers.
     https://github.com/sebastianbergmann/phpunit/issues/720
@@ -45,13 +105,13 @@ class WebPConvertAndServeTest extends TestCase
         $source = __DIR__ . '/test.jpg';
         $destination = __DIR__ . '/test.jpg.webp';
 
-        $failAction = WebPConvertAndServe::$SERVE_ORIGINAL;
-        $criticalFailAction = WebPConvertAndServe::$SERVE_404;
+        $failAction = WebPConvertAndServe::$ORIGINAL;
+        $criticalFailAction = WebPConvertAndServe::$HTTP_404;
 
         ob_start();
         WebPConvertAndServe::convertAndServeImage($source, $destination, array(
             'converters' => array()
-        ), WebPConvertAndServe::$SERVE_ORIGINAL, WebPConvertAndServe::$SERVE_404);
+        ), WebPConvertAndServe::$ORIGINAL, WebPConvertAndServe::$HTTP_404);
 
         $result = ob_get_contents();
 
