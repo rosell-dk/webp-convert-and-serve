@@ -125,20 +125,14 @@ class WebPConvertAndServe
 
             $msg = $e->getMessage();
 
-            if ($debug) {
-                //throw $e;
-                echo $msg;
-                exit;
-            } else {
-                echo $msg;
-                exit;
-            }
+            echo '<b>' . $msg . '</b>';
+            exit;
         }
 
         if ($success) {
             echo 'ok';
         } else {
-            echo 'Conversion failed. None of the tried converters are operational';
+            echo '<b>Conversion failed. None of the tried converters are operational</b>';
         }
     }
 }
