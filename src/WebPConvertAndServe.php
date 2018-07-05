@@ -3,6 +3,7 @@ namespace WebPConvertAndServe;
 
 use WebPConvert\WebPConvert;
 use WebPConvertAndServe\PathHelper;
+use WebPConvert\Converters\ConverterHelper;
 
 class WebPConvertAndServe
 {
@@ -115,7 +116,41 @@ class WebPConvertAndServe
     {
         echo '<i>source:</i> ' . $source . '<br>';
         echo '<i>destination:</i> ' . $destination . '<br>';
-        echo '<i>options:</i> ' . print_r($options, true) . '<br>';
+
+        // Take care of not displaing sensitive converter options.
+        // (psst: the is_callable check is needed in order to work with WebPConvert v1.0)
+
+        if (is_callable('ConverterHelper', 'getClassNameOfConverter')) {
+
+          $printable_options = $options;
+          if (isset($printable_options['converters'])) {
+            foreach ($printable_options['converters'] as &$converter) {
+              if (is_array($converter)) {
+                //echo '::' . $converter['converter'] . '<br>';
+                $className = ConverterHelper::getClassNameOfConverter($converter['converter']);
+
+                // (pstt: the isset check is needed in order to work with WebPConvert v1.0)
+                if (isset($className::$extraOptions)) {
+                  foreach ($className::$extraOptions as $extraOption) {
+                    if ($extraOption['sensitive']) {
+                      if (isset($converter['options'][$extraOption['name']])) {
+                        $converter['options'][$extraOption['name']] = '*******';
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+          echo '<i>options:</i> ' . print_r($printable_options, true) . '<br>';
+        }
+
+        // TODO:
+        // We could display warning if unknown options are set
+        // but that requires that WebPConvert also describes its general options
+
+
+
         echo '<br>';
 
         try {
