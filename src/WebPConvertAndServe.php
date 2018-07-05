@@ -168,7 +168,11 @@ class WebPConvertAndServe
         echo '<br>';
 
         try {
-            $success = WebPConvert::convert($source, $destination, $options, new EchoLogger());
+            $echoLogger = null;
+            if (class_exists('WebPConvert\Loggers\EchoLogger')) {
+              $echoLogger = new \WebPConvert\Loggers\EchoLogger();
+            }
+            $success = WebPConvert::convert($source, $destination, $options, $echoLogger);
         } catch (\Exception $e) {
             $success = false;
 
