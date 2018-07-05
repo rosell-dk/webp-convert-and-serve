@@ -128,8 +128,10 @@ class WebPConvertAndServe
 
     public static function convertAndReport($source, $destination, $options)
     {
-        echo '<i>source:</i> ' . $source . '<br>';
-        echo '<i>destination:</i> ' . $destination . '<br>';
+        echo '<html><style>td {vertical-align: top} table {color: #666}</style>';
+        echo '<body><table>';
+        echo '<tr><td><i>source:</i></td><td>' . $source . '</td></tr>';
+        echo '<tr><td><i>destination:</i></td><td>' . $destination . '<td></tr>';
 
         // Take care of not displaing sensitive converter options.
         // (psst: the is_callable check is needed in order to work with WebPConvert v1.0)
@@ -156,8 +158,9 @@ class WebPConvertAndServe
               }
             }
           }
-          echo '<i>options:</i> ' . print_r($printable_options, true) . '<br>';
+          echo '<tr><td><i>options:</i></td><td>' . print_r($printable_options, true) . '</td></tr>';
         }
+        echo '</table>';
 
         // TODO:
         // We could display warning if unknown options are set
@@ -183,9 +186,10 @@ class WebPConvertAndServe
         }
 
         if ($success) {
-            echo 'ok';
+            //echo 'ok';
         } else {
             echo '<b>Conversion failed. None of the tried converters are operational</b>';
         }
+        echo '</body></html>';
     }
 }
