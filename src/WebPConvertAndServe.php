@@ -4,6 +4,7 @@ namespace WebPConvertAndServe;
 use WebPConvert\WebPConvert;
 use WebPConvertAndServe\PathHelper;
 use WebPConvert\Converters\ConverterHelper;
+//use WebPConvert\Loggers\EchoLogger;
 
 class WebPConvertAndServe
 {
@@ -70,8 +71,18 @@ class WebPConvertAndServe
         $criticalFail = false;
 
         $success = false;
+
+        $echoLogger = null;
+        if (class_exists('WebPConvert\Loggers\EchoLogger')) {
+          $echoLogger = new \WebPConvert\Loggers\EchoLogger();
+        }
+
         try {
-            $success = WebPConvert::convert($source, $destination, $options);
+            ob_start();
+            $success = WebPConvert::convert($source, $destination, $options, $echoLogger);
+            $conversionInsights = ob_get_contents();
+            ob_end_clean();
+
             if (!$success) {
                 $msg = 'No converters are operational';
             }
@@ -105,7 +116,10 @@ class WebPConvertAndServe
                     self::serveErrorMessageImage($msg);
                     break;
                 case WebPConvertAndServe::$REPORT:
-                    echo $msg;
+                    echo '<h1>' . $msg . '</h1>';
+                    if ($echoLogger) {
+                      echo '<p>This is how conversion process went:</p>' . $conversionInsights;
+                    }
                     break;
             }
             return $action;
@@ -154,7 +168,7 @@ class WebPConvertAndServe
         echo '<br>';
 
         try {
-            $success = WebPConvert::convert($source, $destination, $options);
+            $success = WebPConvert::convert($source, $destination, $options, new EchoLogger());
         } catch (\Exception $e) {
             $success = false;
 
