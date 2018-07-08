@@ -24,6 +24,6 @@
     "phpunit/phpunit": "5.7.27"
   },
   "require": {
-    "rosell-dk/webp-convert": "^1.0.0"
+    "rosell-dk/webp-convert": "^1.1.0"
   }
 }
