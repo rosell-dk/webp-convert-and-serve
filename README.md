@@ -88,7 +88,7 @@ $options = [
         'gd'
     ];
 
-$status = WebPConvertAndServe::convertAndServeImage($source, $destination, $options);
+$status = WebPConvertAndServe::convertAndServe($source, $destination, $options);
 
 ```
 
