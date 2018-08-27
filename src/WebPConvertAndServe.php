@@ -14,6 +14,11 @@ class WebPConvertAndServe
     public static $REPORT_AS_IMAGE = -3;
     public static $REPORT = -4;
 
+    public static $defaultOptions = [
+        'fail' => 'original',
+        'critical-fail' => '404',
+    ];
+
     private static function serve404()
     {
         $protocol = isset($_SERVER["SERVER_PROTOCOL"]) ? $_SERVER["SERVER_PROTOCOL"] : 'HTTP/1.0';
@@ -58,7 +63,9 @@ class WebPConvertAndServe
         imagedestroy($image);
     }
 
-
+    /**
+     * @depreciated
+     */
     public static function convertAndServeImage($source, $destination, $options, $failAction, $criticalFailAction, $debug = false)
     {
         if ($debug) {
@@ -68,10 +75,38 @@ class WebPConvertAndServe
             ini_set('display_errors', 'Off');
         }
 
+        $options['fail'] = $failAction;
+        $options['critical-fail'] = $criticalFailAction;
+
+        self::convertAndServe($source, $destination, $options);
+    }
+
+    /**
+     * Main method
+     */
+    public static function convertAndServe($source, $destination, $options)
+    {
+        $options = array_merge(self::$defaultOptions, $options);
+
+        $failCodes = [
+            "original" => -1,
+            "404" => -2,
+            "report-as-image" => -3,
+            "report" => -4,
+        ];
+
+        $failAction = $options['fail'];
+        $criticalFailAction = $options['critical-fail'];
+
+        if (is_string($failAction)) {
+            $failAction = $failCodes[$failAction];
+        }
+        if (is_string($criticalFailAction)) {
+            $criticalFailAction = $failCodes[$criticalFailAction];
+        }
+
         $criticalFail = false;
-
         $success = false;
-
         $bufferLogger = new BufferLogger();
 
         try {
