@@ -75,7 +75,7 @@ $options = [
     'fail' => 'original',
     'critical-fail' => '404',
 
-    // You can specify any webp convert option here - such as defining a converters array, which
+    // You can specify any WebPConvert option here - such as defining a converters array, which
     // is needed, if you need to use a cloud converter
     'converters' => [
         [
