@@ -78,7 +78,7 @@ class WebPConvertAndServe
         $options['fail'] = $failAction;
         $options['critical-fail'] = $criticalFailAction;
 
-        self::convertAndServe($source, $destination, $options);
+        return self::convertAndServe($source, $destination, $options);
     }
 
     /**
