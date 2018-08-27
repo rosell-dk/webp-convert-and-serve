@@ -17,42 +17,50 @@ try {
 }
 ```
 
-*But then comes error handling.*
+***But then comes error handling.***
 
 If conversion fails, it will make sense to serve the source image instead (if that exists, that is). For that, we need to inspect the extension in order to provide the correct Content-type header. Also, we want to add headers that tells the browser not to cache it. And what if the source file isn't even available? This should be handled as well. Tedious stuff, that this library takes care of.
 
 
 ## API
 
-**WebPConvertAndServe::convertAndServeImage($source, $destination, $options, $failAction, $criticalFailAction)**
+
+### WebPConvertAndServe::convertAndServeImage($source, $destination, $options)
+*Note: This method was added in 0.4.0. The old one, `convertAndServeImage()` still works, but is depreciated.*
 
 | Parameter                   | Type    | Description                                                                                |
 | --------------------------- | ------- | ------------------------------------------------------------------------------------------ |
-| `$source`                   | String  | Absolute path to source image (only forward slashes allowed)                               |
-| `$destination`              | String  | Absolute path to converted image (only forward slashes allowed)                            |
-| `$options`                  | Array   | Array of conversion options (see WebPConvert documentation)                                |
-| `$failAction`               | Number  | How to handle conversion failure                                                           |
-| `$criticalFailAction`       | Number  | How to handle when source image is missing or isn't an image                               |
+| *$source*                   | String  | Absolute path to source image (only forward slashes allowed)                               |
+| *$destination*              | String  | Absolute path to converted image (only forward slashes allowed)                            |
+| *$options*                  | Array   | Array of conversion options. See below |
+
+#### The *$options* argument
+
+The options argument is a named array. *WebPConvertAndServe* has just two available options (*fail* and *critical-fail*). However, the options will be handed over to *WebPConvert*. So Any option available in webp-convert are available here.
 
 
-**failAction**
+##### *fail*
 
-Indicate what to serve, in case of normal conversion failure
+Indicate what to serve, in case of normal conversion failure.
+Default value: *"original"*
 
-| Possible values:                                    | Meaning                                         |
-| --------------------------------------------------- | ----------------------------------------------- |
-| *WebPConvertAndServe::$ORIGINAL*                    | Serve the original image.                       |
-| *WebPConvertAndServe::$HTTP_404*                    | Serve 404 status (not found)                    |
-| *WebPConvertAndServe::$REPORT_AS_IMAGE*             | Serve an image with text explaining the problem |
-| *WebPConvertAndServe::$REPORT*                      | Serve a textual report explaining the problem   |
+| Possible values   | Meaning                                         |
+| ----------------- | ----------------------------------------------- |
+| "original"        | Serve the original image.                       |
+| "404"             | Serve 404 status (not found)                    |
+| "report-as-image" | Serve an image with text explaining the problem |
+| "report"          | Serve a textual report explaining the problem   |
 
-**criticalFailAction**
+Instead of the string values (ie "original"), you can also use the following constants: *WebPConvertAndServe::$ORIGINAL*, *WebPConvertAndServe::$HTTP_404*, *WebPConvertAndServe::$REPORT_AS_IMAGE* and *WebPConvertAndServe::$REPORT*
 
-Possible values: Same as above, except that `ORIGINAL` is not an option.
+##### critical-fail
 
-**Return value**
+Possible values: Same as above, except that "original" is not an option.
+Default value: *"404"*
 
-Number indicating what was served. On fail or critical fail, the value will be one of the constants listed in failAction. On success, it will be *WebPConvertAndServe::$CONVERTED_IMAGE*. All fail constants are negative. The success constant is positive &ndash; so you can test success with a `if ($returnValue > 0)`
+##### Return value
+
+Number indicating what was served. On fail or critical fail, the value will be one of the following constants: following constants *WebPConvertAndServe::$ORIGINAL*, *WebPConvertAndServe::$HTTP_404*, *WebPConvertAndServe::$REPORT_AS_IMAGE* and *WebPConvertAndServe::$REPORT*. On success, it will be *WebPConvertAndServe::$CONVERTED_IMAGE*. All fail constants are negative. The success constant is positive &ndash; so you can test success with a `if ($returnValue > 0)`
 
 # Example:
 
@@ -63,21 +71,28 @@ use WebPConvertAndServe\WebPConvertAndServe;
 
 $source = __DIR__ . '/logo.jpg';
 $destination = $source . '.webp';
-$options = [];
+$options = [
+    'fail' => 'original',
+    'critical-fail' => '404',
 
-$failAction = WebPConvertAndServe::$ORIGINAL;
-//$failAction = WebPConvertAndServe::$REPORT;
-//$failAction = WebPConvertAndServe::$HTTP_404;
-//$failAction = WebPConvertAndServe::$REPORT_AS_IMAGE;
+    // You can specify any webp convert option here - such as defining a converters array, which
+    // is needed, if you need to use a cloud converter
+    'converters' => [
+        [
+            'converter' => 'ewww',
+            'options' => [
+                'key' => 'blah',
+            ],
+        ],
+        'cwebp',
+        'gd'
+    ];
 
-//$criticalFailAction = WebPConvertAndServe::$REPORT;
-$criticalFailAction = WebPConvertAndServe::$HTTP_404;
-//$criticalFailAction = WebPConvertAndServe::$REPORT_AS_IMAGE;
+$status = WebPConvertAndServe::convertAndServeImage($source, $destination, $options);
 
-WebPConvertAndServe::convertAndServeImage($source, $destination, $options, $failAction, $criticalFailAction);
 ```
 
 
 # Installing
 
-Run `composer require rosell-dk/webp-convert-and-serve`
+`composer require rosell-dk/webp-convert-and-serve`
