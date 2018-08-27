@@ -25,7 +25,7 @@ If conversion fails, it will make sense to serve the source image instead (if th
 ## API
 
 
-### WebPConvertAndServe::convertAndServeImage($source, $destination, $options)
+### WebPConvertAndServe::convertAndServe($source, $destination, $options)
 *Note: This method was added in 0.4.0. The old one, `convertAndServeImage()` still works, but is depreciated.*
 
 | Parameter                   | Type    | Description                                                                                |
