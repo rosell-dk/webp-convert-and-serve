@@ -4,6 +4,7 @@ namespace WebPConvertAndServe;
 use WebPConvert\WebPConvert;
 use WebPConvertAndServe\BufferLogger;
 use WebPConvert\Converters\ConverterHelper;
+
 //use WebPConvert\Loggers\EchoLogger;
 
 class WebPConvertAndServe
@@ -66,8 +67,14 @@ class WebPConvertAndServe
     /**
      * @depreciated
      */
-    public static function convertAndServeImage($source, $destination, $options, $failAction, $criticalFailAction, $debug = false)
-    {
+    public static function convertAndServeImage(
+        $source,
+        $destination,
+        $options,
+        $failAction,
+        $criticalFailAction,
+        $debug = false
+    ) {
         if ($debug) {
             error_reporting(E_ALL);
             ini_set('display_errors', 'On');
@@ -128,7 +135,8 @@ class WebPConvertAndServe
             $status = 'Failure (target file not found)';
             $msg = $e->getMessage();
         } catch (\WebPConvert\Converters\Exceptions\ConverterFailedException $e) {
-            // No converters could convert the image. At least one converter failed, even though it appears to be operational
+            // No converters could convert the image. At least one converter failed, even though it appears to be
+            // operational
             $status = 'Failure (no converters could convert the image)';
             $msg = $e->getMessage();
         } catch (\WebPConvert\Converters\Exceptions\ConversionDeclinedException $e) {
@@ -175,14 +183,13 @@ class WebPConvertAndServe
             } else {
                 $optionsForPrint[] = $optionName . ':' . $optionValue ;
             }
-
         }
 
         header('X-WebP-Convert-And-Serve-Options:' . implode('. ', $optionsForPrint));
 
         header('X-WebP-Convert-And-Serve-Status: ' . $status);
 
-        // Next line is commented out, because we need to be absolute sure that the details does not violate header syntax
+        // Next line is commented out, because we need to be absolute sure that the details does not violate syntax
         // We could either try to filter it, or we could change WebPConvert, such that it only provides safe texts.
         // header('X-WebP-Convert-And-Serve-Details: ' . $bufferLogger->getText());
 
@@ -218,32 +225,30 @@ class WebPConvertAndServe
     /* Hides sensitive options */
     private static function getPrintableOptions($options)
     {
-
         $printable_options = [];
 
         // (psst: the is_callable check is needed in order to work with WebPConvert v1.0)
         if (is_callable('ConverterHelper', 'getClassNameOfConverter')) {
+            $printable_options = $options;
+            if (isset($printable_options['converters'])) {
+                foreach ($printable_options['converters'] as &$converter) {
+                    if (is_array($converter)) {
+                        //echo '::' . $converter['converter'] . '<br>';
+                        $className = ConverterHelper::getClassNameOfConverter($converter['converter']);
 
-          $printable_options = $options;
-          if (isset($printable_options['converters'])) {
-            foreach ($printable_options['converters'] as &$converter) {
-              if (is_array($converter)) {
-                //echo '::' . $converter['converter'] . '<br>';
-                $className = ConverterHelper::getClassNameOfConverter($converter['converter']);
-
-                // (pstt: the isset check is needed in order to work with WebPConvert v1.0)
-                if (isset($className::$extraOptions)) {
-                  foreach ($className::$extraOptions as $extraOption) {
-                    if ($extraOption['sensitive']) {
-                      if (isset($converter['options'][$extraOption['name']])) {
-                        $converter['options'][$extraOption['name']] = '*******';
-                      }
+                        // (pstt: the isset check is needed in order to work with WebPConvert v1.0)
+                        if (isset($className::$extraOptions)) {
+                            foreach ($className::$extraOptions as $extraOption) {
+                                if ($extraOption['sensitive']) {
+                                    if (isset($converter['options'][$extraOption['name']])) {
+                                        $converter['options'][$extraOption['name']] = '*******';
+                                    }
+                                }
+                            }
+                        }
                     }
-                  }
                 }
-              }
             }
-          }
         }
         return $printable_options;
     }

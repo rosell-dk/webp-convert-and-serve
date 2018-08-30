@@ -1,6 +1,7 @@
 <?php
 
 namespace WebPConvertAndServe;
+
 use WebPConvert\Loggers\BaseLogger;
 
 class BufferLogger extends BaseLogger
