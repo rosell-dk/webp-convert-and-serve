@@ -1,6 +1,7 @@
 # WebP Convert and Serve
 
-***NOTE: This library will be part of WebP Convert soon (depreciated, that is)***
+# This library is now part of [WebP Convert](https://github.com/rosell-dk/webp-convert/) and thus obsolete!
+
 
 [![Build Status](https://travis-ci.org/rosell-dk/webp-convert.png?branch=master)](https://travis-ci.org/rosell-dk/webp-convert-and-serve)
 
